@@ -3,6 +3,7 @@ import pdfplumber
 from collections import Counter
 import itertools
 import re
+import random
 
 # -------------------------------
 # PDF WORTLISTE LADEN
@@ -30,7 +31,7 @@ wortliste = lade_wortliste()
 def ist_moeglich(wort, buchstaben):
     return not (Counter(wort) - buchstaben)
 
-def finde_anagramme(eingabe, wortliste, max_ergebnisse=3):
+def finde_anagramme(eingabe, wortliste, max_ergebnisse=10):
     eingabe = eingabe.lower().replace(" ", "")
     buchstaben = Counter(eingabe)
 
@@ -62,8 +63,8 @@ st.markdown("""
 .stApp {
     background-color: #ffc0cb;
 }
-h1, h2, h3, label {
-    color: #4a004a;
+h1, h2, h3, label, p, div {
+    color: red;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -72,12 +73,22 @@ st.title("💗 Deutscher Anagramm Generator")
 
 eingabe = st.text_input("Satz eingeben:")
 
-if eingabe:
-    ergebnisse = finde_anagramme(eingabe, wortliste)
+# Session-State vorbereiten
+if "anagramme" not in st.session_state:
+    st.session_state.anagramme = []
 
-    if ergebnisse:
+if eingabe:
+    if st.button("Anagramme generieren"):
+        st.session_state.anagramme = finde_anagramme(eingabe, wortliste)
+        random.shuffle(st.session_state.anagramme)
+
+    if st.session_state.anagramme:
         st.subheader("Gefundene Anagramme:")
-        for e in ergebnisse:
+
+        if st.button("🔀 Neu mischen"):
+            random.shuffle(st.session_state.anagramme)
+
+        for e in st.session_state.anagramme:
             st.write("👉", e)
     else:
         st.write("Keine Anagramme gefunden.")
